@@ -1,28 +1,16 @@
 <!doctype html>
 <html>
   <head>
-    <title>Socket.IO chat</title>
+    <title>Language xChange</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="/stylesheets/index.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.3.1/angular-ui-router.min.js"></script>
   </head>
-  <body>
-  <%- include partials/navalt %>
-  <form id="name">
-    <input type="text" id="n">
-    <input type="submit">
-  </form>
-  <div class="container col-xs-12">
-    <div id="chat" class="col-xs-9">
-      <h3>Chats</h3>
-      <ul id="messages">
-      </ul>
-      <form id="chat-form" action="">
-        <input id="m" autocomplete="off" /><button>Send</button>
-      </form>
-    </div>
-    <div id="user-list" class="col-xs-3">
-      <h3>Connected</h3>
-    </div>
+  <body ng-app="xChange">
+  <%- include partials/navbar %>
+  <div class="container">
+    <ui-view></ui-view>
   </div>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>

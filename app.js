@@ -5,6 +5,16 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var socket_io = require('socket.io');
+var passport = require('passport');
+
+// MONGODB
+
+var mongoose = require('mongoose');
+require('./models/Users')
+
+require('./config/passport')
+
+mongoose.connect('mongodb://localhost:27017/xchange')
 
 var users = require('./routes/users');
 
