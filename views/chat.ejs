@@ -7,12 +7,16 @@
   </head>
   <body>
   <%- include partials/navalt %>
+  <form id="name">
+    <input type="text" id="n">
+    <input type="submit">
+  </form>
   <div class="container col-xs-12">
     <div id="chat" class="col-xs-9">
       <h3>Chats</h3>
       <ul id="messages">
       </ul>
-      <form action="">
+      <form id="chat-form" action="">
         <input id="m" autocomplete="off" /><button>Send</button>
       </form>
     </div>
