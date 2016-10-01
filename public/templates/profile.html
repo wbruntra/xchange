@@ -2,22 +2,27 @@
   <h1>XChange</h1>
 </div>
 
-<form ng-submit="profileUpdate()"
+<form ng-submit="updateProfile()"
   style="margin-top:30px;">
   <h3>Update Information</h3>
+  <p>{{ profile.username }}</p>
 
   <div class="form-group">
     <input type="text"
     class="form-control"
     placeholder="Skype Name"
-    ng-model="user.skypename"></input>
+    ng-model="profile.skypename"></input>
   </div>
   <div class="form-group">
     <p>Enter your password to confirm changes to your profile</p>
     <input type="password"
     class="form-control"
     placeholder="Password"
-    ng-model="user.password"></input>
+    ng-model="profile.password"></input>
   </div>
   <button type="submit" class="btn btn-primary">Update Profile</button>
 </form>
+
+<pre>
+  {{ profile }}
+</pre>

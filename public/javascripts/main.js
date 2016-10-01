@@ -6,10 +6,15 @@ app.config([
 function($stateProvider, $urlRouterProvider) {
 
   $stateProvider
-    .state('home', {
-      url: '/home',
-      templateUrl: 'templates/home.html',
-      controller: 'MainCtrl'
+    .state('entry', {
+      url: '/entry',
+      templateUrl: 'templates/entry.html',
+      controller: 'MainCtrl',
+      onEnter: ['$state', 'auth', function($state, auth) {
+        if(auth.isLoggedIn()) {
+          $state.go('home');
+        }
+      }]
     })
 
   .state('login', {
@@ -18,7 +23,7 @@ function($stateProvider, $urlRouterProvider) {
     controller: 'AuthCtrl',
     onEnter: ['$state', 'auth', function($state, auth){
       if(auth.isLoggedIn()){
-        $state.go('home');
+        $state.go('entry');
       }
     }]
   })
@@ -28,9 +33,38 @@ function($stateProvider, $urlRouterProvider) {
     controller: 'AuthCtrl',
     onEnter: ['$state', 'auth', function($state, auth){
       if(auth.isLoggedIn()){
-        $state.go('home');
+        $state.go('entry');
       }
     }]
+  })
+
+  .state('profile', {
+    url: '/profile',
+    templateUrl: 'templates/profile.html',
+    controller: 'ProfileCtrl'
+  })
+
+  .state('inbox', {
+    url: '/inbox',
+    templateUrl: 'templates/inbox.html',
+    controller: 'InboxCtrl',
+    resolve: {
+      messagePromise: ['messages', function(messages) {
+        return messages.getAll();
+      }]
+    }
+  })
+
+  .state('new', {
+    url: '/new',
+    templateUrl: 'templates/new.html',
+    controller: 'NewMsgCtrl'
+  })
+
+  .state('home', {
+    url: '/home',
+    templateUrl: 'templates/home.html',
+    controller: 'HomeCtrl'
   });
 
   $urlRouterProvider.otherwise('home');
@@ -78,16 +112,89 @@ app.factory('auth', ['$http', '$window', function($http, $window){
       });
     };
     auth.logOut = function(){
-      $window.localStorage.removeItem('flapper-news-token');
+      $window.localStorage.removeItem('xchange-token');
     };
   return auth;
 }])
 
+app.factory('messages', ['$http', 'auth', function($http, auth){
+  var o = {};
+  o.messages = [];
+  o.getAll = function() {
+    return $http.get('/messages',{
+      headers: {Authorization: 'Bearer '+auth.getToken()}
+    }).success(function(data){
+      angular.copy(data, o.messages);
+    });
+  }
+  o.create = function(message) {
+    return $http.post('/messages', message, {
+      headers: {Authorization: 'Bearer '+auth.getToken()}
+    }).success(function(data){
+      console.log(data);
+    });
+  };
+  o.get = function(id) {
+    return $http.get('/messages/'+ id).then(function(res) {
+      return res.data;
+    });
+  }
+  return o;
+}]);
 app.controller('MainCtrl', [
 '$scope',
 'auth',
   function($scope,auth){
     $scope.isLoggedIn = auth.isLoggedIn;
+  }
+]);
+
+app.controller('HomeCtrl', [
+'$scope',
+'auth',
+  function($scope,auth){
+    $scope.isLoggedIn = auth.isLoggedIn;
+  }
+]);
+
+app.controller('InboxCtrl', [
+'$scope',
+'auth',
+'messages',
+  function($scope,auth,messages){
+    $scope.messages = messages.messages;
+    $scope.isLoggedIn = auth.isLoggedIn;
+  }
+]);
+
+app.controller('NewMsgCtrl', [
+'$scope',
+'auth',
+'messages',
+  function($scope,auth,messages){
+    $scope.message = {};
+    $scope.currentUser = auth.currentUser;
+    $scope.sendMessage = function() {
+      if ($scope.message.receiver == "" || $scope.message.content == "") {return;}
+      messages.create($scope.message);
+    }
+  }
+]);
+
+app.controller('ProfileCtrl', [
+'$scope',
+'$http',
+'auth',
+  function($scope,$http,auth){
+    $scope.isLoggedIn = auth.isLoggedIn;
+    $scope.username = auth.currentUser();
+    $scope.profile = {username: $scope.username,
+    cool: true};
+    $scope.updateProfile = function() {
+      return $http.post('/profile', $scope.profile).success(function(data) {
+        console.log(data);
+      });
+    };
   }
 ]);
 

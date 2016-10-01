@@ -11,6 +11,7 @@ var passport = require('passport');
 
 var mongoose = require('mongoose');
 require('./models/Users')
+require('./models/Messages')
 
 require('./config/passport')
 

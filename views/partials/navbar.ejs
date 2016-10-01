@@ -1,12 +1,13 @@
 <nav class="navbar navbar-inverse" ng-controller="NavCtrl">
   <div class="navbar-header">
-    <a class="navbar-brand" href="/">X-Change</a>
+    <a class="navbar-brand" href="/#/entry">X-Change</a>
   </div>
   <ul class="nav navbar-nav">
-    <li class="active"><a href="#">Home</a></li>
+    <li class="active"><a href="/#/home">Home</a></li>
     <li><a href="#">Users</a></li>
   </ul>
   <ul class="nav navbar-nav navbar-right">
+    <li ng-show="isLoggedIn()"><a href="/#/inbox"><span class="glyphicon glyphicon-envelope"></span></a></li>
     <li ng-show="isLoggedIn()"><a href="/#/profile">{{ currentUser() }}</a></li>
     <li ng-show="isLoggedIn()"><a href="" ng-click="logOut()">Log Out</a></li>
     <li ng-hide="isLoggedIn()"><a href="/#/register"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>

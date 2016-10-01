@@ -5,6 +5,7 @@ var secrets = require('../secrets');
 
 var UserSchema = new mongoose.Schema({
   username: {type: String, lowercase: true, unique: true},
+  skypename: String,
   hash: String,
   salt: String
 });
