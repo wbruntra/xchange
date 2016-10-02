@@ -47,21 +47,44 @@ router.post('/login', function(req, res, next) {
 
 router.post('/profile', function(req,res, next) {
   var username = req.body.username;
-  User.findOne({username: username}, function(err, user) {
-    if (err) {return done(err)};
-    if (user) {
-      console.log(req.body);
-      if (user.validPassword(req.body.password)) {
-        user.skypename = req.body.skypename;
-        user.save(function(err) {
-          if(err) {return next(err);}
-        });
-        return res.json({msg:'Nice post!'});
+  if (req.body.password) {
+    User.findOne({username: username}, function(err, user) {
+      if (err) {return done(err)};
+      if (user) {
+        console.log(req.body);
+        if (user.validPassword(req.body.password)) {
+          user.skypename = req.body.skypename;
+          user.save(function(err) {
+            if(err) {return next(err);}
+          });
+          return res.json({msg:'Nice post!'});
+        }
+        else {
+          return res.json({msg:'Wrong password!'});
+        }
       }
-      else {
-        return res.json({msg:'Wrong password!'});
-      }
-    }
+    });
+  }
+  else {
+    return res.json({msg: 'Don\'t forget a password!'})
+  }
+});
+
+router.param('username', function(req, res, next, name) {
+  var query = User.findOne({username: name},'username skypename', function(err,user) {
+    if(err) {return next(err);}
+    req.user = user;
+    return next();
+  });
+});
+
+router.get('/users/:username', function(req, res) {
+  res.json(req.user);
+});
+
+router.get('/users', function(req,res,next) {
+  User.find({}, function(err,users) {
+    res.json(users);
   });
 });
 

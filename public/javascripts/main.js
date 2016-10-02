@@ -44,6 +44,28 @@ function($stateProvider, $urlRouterProvider) {
     controller: 'ProfileCtrl'
   })
 
+  .state('userlist', {
+    url: '/userlist',
+    templateUrl: 'templates/userlist.html',
+    controller: 'UsersCtrl',
+    resolve: {
+      userPromise: ['users', function(users) {
+        return users.getAll();
+      }]
+    }
+  })
+
+  .state('viewprofile', {
+  url: '/users/{username}',
+  templateUrl: 'templates/viewprofile.html',
+  controller: 'ProfileViewCtrl',
+  resolve: {
+    user: ['$stateParams', 'users', function($stateParams, users) {
+        return users.get($stateParams.username);
+      }]
+    }
+  })
+
   .state('inbox', {
     url: '/inbox',
     templateUrl: 'templates/inbox.html',
@@ -56,7 +78,7 @@ function($stateProvider, $urlRouterProvider) {
   })
 
   .state('new', {
-    url: '/new',
+    url: '/new?touser',
     templateUrl: 'templates/new.html',
     controller: 'NewMsgCtrl'
   })
@@ -141,6 +163,23 @@ app.factory('messages', ['$http', 'auth', function($http, auth){
   }
   return o;
 }]);
+
+app.factory('users', ['$http', 'auth', function($http, auth){
+  var o = {};
+  o.users = [];
+  o.getAll = function() {
+    return $http.get('/users').success(function(data) {
+      angular.copy(data, o.users);
+    })
+  }
+  o.get = function(username) {
+    return $http.get('/users/'+username).then(function(res) {
+      return res.data;
+    })
+  }
+  return o;
+}]);
+
 app.controller('MainCtrl', [
 '$scope',
 'auth',
@@ -169,11 +208,13 @@ app.controller('InboxCtrl', [
 
 app.controller('NewMsgCtrl', [
 '$scope',
+'$stateParams',
 'auth',
 'messages',
-  function($scope,auth,messages){
+  function($scope,$stateParams,auth,messages){
     $scope.message = {};
     $scope.currentUser = auth.currentUser;
+    $scope.message.receiver = $stateParams.touser;
     $scope.sendMessage = function() {
       if ($scope.message.receiver == "" || $scope.message.content == "") {return;}
       messages.create($scope.message);
@@ -195,6 +236,30 @@ app.controller('ProfileCtrl', [
         console.log(data);
       });
     };
+  }
+]);
+
+app.controller('UsersCtrl', [
+'$scope',
+'$http',
+'auth',
+'users',
+  function($scope,$http,auth,users){
+    $scope.isLoggedIn = auth.isLoggedIn;
+    $scope.username = auth.currentUser();
+    $scope.users = users.users;
+  }
+]);
+
+app.controller('ProfileViewCtrl', [
+'$scope',
+'$http',
+'auth',
+'users',
+'user',
+  function($scope,$http,auth,users, user){
+    $scope.user = user;
+    $scope.isLoggedIn = auth.isLoggedIn;
   }
 ]);
 
