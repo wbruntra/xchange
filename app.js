@@ -12,10 +12,13 @@ var passport = require('passport');
 var mongoose = require('mongoose');
 require('./models/Users')
 require('./models/Messages')
+require('./models/Decks');
+require('./models/Cards')
 
 require('./config/passport')
 
-mongoose.connect('mongodb://localhost:27017/xchange')
+mongoose.connect('mongodb://localhost:27017/xchange');
+// mongoose.connect('mongodb://<dbuser>:<dbpassword>@ds049466.mlab.com:49466/xchange');
 
 var users = require('./routes/users');
 

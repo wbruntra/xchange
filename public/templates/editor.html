@@ -1,0 +1,46 @@
+<h1>Deck editor</h1>
+
+<form ng-submit="addDeck()">
+  <h3>Create New Deck</h3>
+  <div class="form-group">
+    <input type="text"
+    class="form-control"
+    placeholder="Deck Name"
+    ng-model="deck.title"></input>
+  </div>
+  <button type="submit" class="btn btn-primary">Create Deck</button>
+</form>
+
+<pre>
+{{ deck }}
+</pre>
+
+<form ng-submit="addCard()">
+  <h3>Create New Card</h3>
+  <select ng-model="deck.title">
+    <option ng-repeat="deck in decks">{{ deck.title }}</option>
+  </select>
+  <div class="form-group">
+    <input type="text"
+    class="form-control"
+    placeholder="Front of Card"
+    ng-model="card.front"></input>
+  </div>
+  <div class="form-group">
+    <input type="text"
+    class="form-control"
+    placeholder="Back of Card"
+    ng-model="card.back"></input>
+  </div>
+  <div class="form-group">
+    <input type="text"
+    class="form-control"
+    placeholder="Tips (pronunciation, examples, etc.)"
+    ng-model="card.tips"></input>
+  </div>
+  <button type="submit" class="btn btn-primary">Add Card</button>
+</form>
+
+<pre>
+  {{ card }}
+</pre>

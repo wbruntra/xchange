@@ -8,6 +8,8 @@ var auth = jwt({secret: secrets.secretKey, userProperty: 'payload'});
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
 var Message = mongoose.model('Message');
+var Deck = mongoose.model('Deck');
+var Card = mongoose.model('Card');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -106,6 +108,55 @@ router.post('/messages', auth, function(req,res,next) {
     res.json({msg:'Success!'});
   });
 });
+
+// [START decks]
+
+function getUniqueName(username, deckname) {
+  return username + '-' + deckname;
+}
+
+router.get('/decks', auth, function(req,res) {
+  var username = req.payload.username;
+  var deckname = req.body.deckname;
+  Deck.find({creator: username}, function(err, decks) {
+    if(err) {return next(err)}
+    res.json(decks);
+  });
+});
+
+router.post('/decks', auth, function(req, res) {
+  var deckname = req.body.deckname;
+  var deck = new Deck(req.body);
+  deck.creator = req.payload.username;
+  deck.uniqname = req.payload.username + '-' + deck.title;
+
+  deck.save(function(err, deck) {
+    if(err) {return next(err); }
+
+    res.json(deck);
+  });
+});
+
+router.param('deck', function(req, res, next, id) {
+  var query = Deck.findById(id);
+
+  query.exec(function (err, post){
+    if (err) { return next(err); }
+    if (!post) { return next(new Error('can\'t find post')); }
+
+    req.deck = deck;
+    return next();
+  });
+});
+
+router.get('/decks/:deck', function(req, res) {
+  req.deck.populate('cards', function(err, post) {
+    if (err) {return next(err);}
+    res.json(req.deck);
+  });
+});
+
+// [END decks]
 
 module.exports = router;
 
