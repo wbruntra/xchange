@@ -1,4 +1,4 @@
-var app = angular.module('xChange',['ui.router']);
+var app = angular.module('xChange',['ui.router','ngSanitize']);
 
 // var getAllDecks = function(decks) {
 //   return decks.getAll();
@@ -117,12 +117,14 @@ function($stateProvider, $urlRouterProvider) {
 
   .state('viewtext', {
     url: '/texts/{id}',
-    templateUrl: 'viewtext',
+    templateUrl: function(stateParams) {
+      return 'viewtext/'+ stateParams.id
+    },
     controller: 'TextViewController',
     resolve: {
-      text: ['$stateParams', 'texts', function($stateParams, texts) {
-      return texts.get($stateParams.id);
-    }],
+    //   text: ['$stateParams', 'texts', function($stateParams, texts) {
+    //   return texts.get($stateParams.id);
+    // }],
       decksPromise: ['decks', function(decks) {
         return decks.getAll();
       }]
@@ -338,16 +340,26 @@ app.controller('NewMsgController', [
 
 app.controller('TextController', [
 '$scope',
-'$stateParams',
 'auth',
 'texts',
-  function($scope,$stateParams,auth,texts){
+  function($scope,auth,texts){
+    $scope.startQuill = function() {
+      $scope.quill = new Quill('#text-area', {
+        theme: 'snow'
+      });
+    }
+    $scope.update = function() {
+      console.log('hello!');
+      $scope.text.content = document.getElementById('text-area').firstChild.innerHTML;
+    }
     $scope.texts = texts.texts;
     $scope.text = {};
     $scope.currentUser = auth.currentUser;
     $scope.submitText = function() {
+      $scope.text.content =  document.getElementById('text-area').firstChild.innerHTML;
       if ($scope.text.title == "" || $scope.text.content == "") {return;}
       texts.create($scope.text);
+      $scope.text = {};
     }
   }
 ]);
@@ -373,10 +385,8 @@ app.controller('TextViewController', [
 '$http',
 'auth',
 'texts',
-'text',
 'decks',
   function($scope,$http,auth,texts, text, decks){
-    $scope.text = text;
     $scope.card = {};
     $scope.decks = decks.decks;
     $scope.deck = $scope.decks[0];

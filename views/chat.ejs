@@ -3,12 +3,16 @@
   <head>
     <title>Language xChange</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="https://cdn.quilljs.com/1.1.3/quill.snow.css" rel="stylesheet">
+
     <link rel="stylesheet" href="/stylesheets/index.css">
     <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.3.1/angular-ui-router.min.js"></script>
+    <script src="javascripts/angular-sanitize.js"></script>
+
   </head>
   <body ng-app="xChange">
-  <%- include partials/navbar %>
+    <%- include partials/navcopy %>
   <div class="container">
     <ui-view></ui-view>
   </div>
@@ -17,6 +21,8 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="/javascripts/letters.js"></script>
     <script src="//mandarinspot.com/static/mandarinspot.min.js" charset="UTF-8"></script>
+    <!-- Include the Quill library -->
+    <script src="https://cdn.quilljs.com/1.1.3/quill.js"></script>
     <script src="/javascripts/main.js"></script>
   </body>
 </html>

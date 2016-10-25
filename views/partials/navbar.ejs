@@ -2,14 +2,14 @@
   <div class="navbar-header">
     <a class="navbar-brand" href="/#/entry">X-Change</a>
   </div>
-  <ul class="nav navbar-nav">
+  <ul class="nav navbar-nav navbar-collapse">
     <li class="active"><a href="/#/home">Home</a></li>
     <li><a href="/#/userlist">Users</a></li>
     <li><a href="/#/review">Review</a></li>
     <li><a href="/#/editor">Edit</a></li>
     <li><a href="/#/texts">Texts</a></li>
   </ul>
-  <ul class="nav navbar-nav navbar-right">
+  <ul class="nav navbar-nav pull-right">
     <li ng-show="isLoggedIn()"><a href="/#/inbox"><span class="glyphicon glyphicon-envelope"></span></a></li>
     <li ng-show="isLoggedIn()"><a href="/#/profile">{{ currentUser() }}</a></li>
     <li ng-show="isLoggedIn()"><a href="" ng-click="logOut()">Log Out</a></li>

@@ -236,6 +236,10 @@ router.get('/viewtext', function(req, res) {
   res.render('viewtext');
 });
 
+router.get('/viewtext/:text', function(req,res) {
+  res.render('viewtext', {text: req.text});
+});
+
 // [END templates]
 
 module.exports = router;
