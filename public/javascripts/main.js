@@ -1,5 +1,9 @@
 var app = angular.module('xChange',['ui.router']);
 
+// var getAllDecks = function(decks) {
+//   return decks.getAll();
+// };
+
 // [START routes]
 
 app.config([
@@ -29,6 +33,7 @@ function($stateProvider, $urlRouterProvider) {
       }
     }]
   })
+
   .state('register', {
     url: '/register',
     templateUrl: 'templates/register.html',
@@ -61,7 +66,9 @@ function($stateProvider, $urlRouterProvider) {
     url: '/review',
     templateUrl: 'templates/review.html',
     controller: 'ReviewController',
-    resolve: {}
+    resolve: { decksPromise: ['decks', function(decks) {
+      return decks.getAll();
+    }]}
   })
 
   .state('viewprofile', {
@@ -88,11 +95,47 @@ function($stateProvider, $urlRouterProvider) {
 
   .state('editor', {
     url: '/editor',
-    templateUrl: 'templates/editor.html',
+    templateUrl: 'editor',
     controller: 'EditorController',
     resolve: {
       decksPromise: ['decks', function(decks) {
         return decks.getAll();
+      }]
+    }
+  })
+
+  .state('study', {
+    url: '/study/{uniqname}',
+    templateUrl: 'templates/studydeck.html',
+    controller: 'StudyController',
+    resolve: {
+      deck: ['$stateParams', 'decks', function($stateParams, decks) {
+        return decks.get($stateParams.uniqname)
+      }]
+    }
+  })
+
+  .state('viewtext', {
+    url: '/texts/{id}',
+    templateUrl: 'viewtext',
+    controller: 'TextViewController',
+    resolve: {
+      text: ['$stateParams', 'texts', function($stateParams, texts) {
+      return texts.get($stateParams.id);
+    }],
+      decksPromise: ['decks', function(decks) {
+        return decks.getAll();
+      }]
+    }
+  })
+
+  .state('texts', {
+    url: '/texts',
+    templateUrl: 'templates/texts.html',
+    controller: 'TextController',
+    resolve: {
+      textsPromise: ['texts', function(texts) {
+        return texts.getAll();
       }]
     }
   })
@@ -188,6 +231,31 @@ app.factory('messages', ['$http', 'auth', function($http, auth){
   return o;
 }]);
 
+app.factory('texts', ['$http', 'auth', function($http, auth){
+  var o = {};
+  o.texts = [];
+  o.getAll = function() {
+    return $http.get('/texts',{
+      headers: {Authorization: 'Bearer '+auth.getToken()}
+    }).success(function(data){
+      angular.copy(data, o.texts);
+    });
+  }
+  o.create = function(text) {
+    return $http.post('/texts', text, {
+      headers: {Authorization: 'Bearer '+auth.getToken()}
+    }).success(function(data){
+      console.log(data);
+    });
+  };
+  o.get = function(id) {
+    return $http.get('/texts/'+ id).then(function(res) {
+      return res.data;
+    });
+  }
+  return o;
+}]);
+
 app.factory('decks', ['$http', 'auth', function($http, auth) {
   var o = {};
   o.decks = [];
@@ -196,6 +264,11 @@ app.factory('decks', ['$http', 'auth', function($http, auth) {
       headers: {Authorization: 'Bearer '+auth.getToken()}
     }).success(function(data){
       angular.copy(data, o.decks);
+    });
+  };
+  o.get = function(uniqname) {
+  return $http.get('/study/'+ uniqname).then(function(res) {
+      return res.data;
     });
   }
   return o;
@@ -262,6 +335,87 @@ app.controller('NewMsgController', [
     }
   }
 ]);
+
+app.controller('TextController', [
+'$scope',
+'$stateParams',
+'auth',
+'texts',
+  function($scope,$stateParams,auth,texts){
+    $scope.texts = texts.texts;
+    $scope.text = {};
+    $scope.currentUser = auth.currentUser;
+    $scope.submitText = function() {
+      if ($scope.text.title == "" || $scope.text.content == "") {return;}
+      texts.create($scope.text);
+    }
+  }
+]);
+
+app.controller('StudyController', ['$scope', 'auth', 'deck',
+ function($scope, auth, deck) {
+   $scope.deck = deck;
+   $scope.cards = deck.cards;
+   $scope.showFront = true;
+   $scope.index = 0;
+   $scope.nextCard = function() {
+     $scope.index++;
+     $scope.showFront = true;
+     if ($scope.index >= $scope.cards.length) {
+       $scope.index = 0;
+     }
+   }
+ }
+]);
+
+app.controller('TextViewController', [
+'$scope',
+'$http',
+'auth',
+'texts',
+'text',
+'decks',
+  function($scope,$http,auth,texts, text, decks){
+    $scope.text = text;
+    $scope.card = {};
+    $scope.decks = decks.decks;
+    $scope.deck = $scope.decks[0];
+    $scope.deckname = $scope.decks[0].uniqname;
+    // $scope.card.deck = $scope.decks[0].uniqname;
+    $scope.annotate = function() {
+      console.log('hiya');
+      $scope.$broadcast('dataloaded');
+    }
+    $scope.showSelectedText = function() {
+      var text = "";
+            if (window.getSelection) {
+          text = window.getSelection().toString();
+      } else if (document.selection && document.selection.type != "Control") {
+          text = document.selection.createRange().text;
+      }
+      $scope.card.front = text;
+    };
+    $scope.addCard = function() {
+        return $http.post('/decks/'+ $scope.deckname +'/cards', $scope.card, {
+          headers: {Authorization: 'Bearer '+auth.getToken()}
+        }).success(function(data) {
+          console.log(data);
+        });
+    }
+  }
+]);
+
+app.directive('annotateText', ['$timeout', function ($timeout) {
+  return {
+    link: function ($scope, element, attrs) {
+    $scope.$on('dataloaded', function () {
+        $timeout(function () {
+          mandarinspot.annotate('#chinese');
+        }, 0, false);
+      })
+    }
+  };
+}]);
 
 app.controller('ProfileController', [
 '$scope',
@@ -339,10 +493,11 @@ function($scope, auth){
 app.controller('ReviewController', [
   '$scope',
   'auth',
-  function($scope,auth) {
+  'decks',
+  function($scope,auth,decks) {
     $scope.isLoggedIn = auth.isLoggedIn;
     $scope.currentUser = auth.currentUser;
-
+    $scope.decks = decks.decks;
     $scope.showFront = true;
     $scope.index = 0;
     $scope.cards = [
@@ -358,6 +513,10 @@ app.controller('ReviewController', [
         $scope.index = 0;
       }
     }
+
+    $scope.loadCards = function(deckName) {
+
+    };
 }]);
 
 app.controller('EditorController', [
@@ -378,11 +537,72 @@ app.controller('EditorController', [
       });
     }
     $scope.addCard = function() {
-        return $http.post('/decks/'+ $scope.deckname, $scope.card).success(function(data) {
+        return $http.post('/cards', $scope.card).success(function(data) {
           console.log(data);
         });
-    }
+    };
   }
 ])
 
 // [END controllers]
+
+// [START multiple use functions]
+
+function getLetters() {
+  var letters = {
+    a1: "ā",
+    a2: "á",
+    a3: 'ǎ',
+    a4: "à",
+    e1: "ē",
+    e2: "é",
+    e3: 'ě',
+    e4: "è",
+    i1: "ī",
+    i2: "í",
+    i3: 'ǐ',
+    i4: "ì",
+    o1: "ō",
+    o2: "ó",
+    o3: 'ǒ',
+    o4: "ò",
+    u1: "ū",
+    u2: "ú",
+    u3: "ǔ",
+    u4: "ù",
+    v1: "ǖ",
+    v2: "ǘ",
+    v3: "ǚ",
+    v4: "ǜ"
+  }
+  return letters
+}
+
+var activeVowel = "";
+var onAlert = false;
+$(document).on('keypress','.pinyin',function(e) {
+  var key = e.key;
+  if (onAlert) {
+    if ('1234'.indexOf(key) != -1) {
+      e.preventDefault();
+      var $txt = $(this);
+      var caretPos = $txt[0].selectionStart;
+      var textAreaTxt = $txt.val();
+      var tone = activeVowel + key;
+      var txtToAdd = letters[tone];
+      $txt.val(textAreaTxt.substring(0, caretPos-1) + txtToAdd + textAreaTxt.substring(caretPos) );
+      activeVowel = "";
+      $txt[0].selectionStart = caretPos;
+      $txt[0].selectionEnd = caretPos;
+      angular.element($txt).scope().$digest();
+    }
+    onAlert = false;
+  };
+  if ('aeiouv'.indexOf(key) != -1) {
+    activeVowel = key;
+    onAlert = true;
+  };
+});
+
+
+// [END multiple use functions]

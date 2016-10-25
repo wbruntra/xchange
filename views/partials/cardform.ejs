@@ -1,0 +1,25 @@
+<form ng-submit="addCard()">
+  <h3>Create New Card</h3>
+  <select ng-model="deckname">
+    <option ng-repeat="deck in decks" value="{{ deck.uniqname }}">{{ deck.title }}</option>
+  </select>
+  <div class="form-group">
+    <input type="text"
+    class="form-control"
+    placeholder="Front of Card"
+    ng-model="card.front"></input>
+  </div>
+  <div class="form-group">
+    <input type="text"
+    class="form-control pinyin"
+    placeholder="Pronunciation"
+    ng-model="card.back"></input>
+  </div>
+  <div class="form-group">
+    <input type="text"
+    class="form-control"
+    placeholder="Translation and tips (examples, etc.)"
+    ng-model="card.tips"></input>
+  </div>
+  <button type="submit" class="btn btn-primary">Add Card</button>
+</form>

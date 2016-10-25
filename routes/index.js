@@ -10,6 +10,7 @@ var User = mongoose.model('User');
 var Message = mongoose.model('Message');
 var Deck = mongoose.model('Deck');
 var Card = mongoose.model('Card');
+var Text = mongoose.model('Text');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -137,26 +138,105 @@ router.post('/decks', auth, function(req, res) {
   });
 });
 
-router.param('deck', function(req, res, next, id) {
-  var query = Deck.findById(id);
-
-  query.exec(function (err, post){
+router.param('deck', function(req, res, next, uniqname) {
+  // var query = Deck.findById(id);
+  var query = Deck.findOne({'uniqname': uniqname})
+  query.exec(function (err, deck){
     if (err) { return next(err); }
-    if (!post) { return next(new Error('can\'t find post')); }
+    if (!deck) { return next(new Error('can\'t find deck')); }
 
     req.deck = deck;
     return next();
   });
 });
 
-router.get('/decks/:deck', function(req, res) {
-  req.deck.populate('cards', function(err, post) {
+router.get('/study/:deck', function(req, res) {
+  req.deck.populate('cards', function(err, deck) {
     if (err) {return next(err);}
+    console.log(req.deck);
     res.json(req.deck);
   });
 });
 
 // [END decks]
+
+// [START texts]
+
+router.param('text', function(req, res, next, id) {
+  var query = Text.findById(id);
+
+  query.exec(function (err, text){
+    if (err) { return next(err); }
+    if (!text) { return next(new Error('can\'t find text')); }
+
+    req.text = text;
+    return next();
+  });
+});
+
+router.get('/texts/:text', function(req, res) {
+  res.json(req.text);
+});
+
+router.get('/texts', function(req, res) {
+  Text.find(function(err, texts) {
+    console.log(texts);
+    res.json(texts);
+  });
+});
+
+router.post('/texts', auth, function(req, res) {
+  var text = new Text(req.body);
+  text.contributor = req.payload.username;
+  text.save(function(err, text) {
+    if(err) {return next(err)};
+    res.json(text);
+  });
+});
+
+
+// [END texts]
+
+// [START cards]
+
+router.post('/cards', auth, function(req, res) {
+  var card = new Card(req.body);
+  card.creator = req.payload.username;
+  console.log(card);
+  res.json(card);
+  // card.save(function(err, card) {
+  //   if(err) {return next(err)};
+  //   res.json(card);
+  // });
+});
+
+router.post('/decks/:deck/cards', auth, function(req, res) {
+  var card = new Card(req.body);
+  card.creator = req.payload.username;
+  card.deck = req.deck;
+  card.save(function(err, card) {
+    if (err) {return next(err);}
+    req.deck.cards.push(card);
+    req.deck.save(function(err,deck) {
+      if(err) {return next(err);}
+      res.json(card);
+    });
+  });
+});
+
+// [END cards]
+
+// [START templates]
+
+router.get('/editor', function(req,res) {
+  res.render('editor');
+});
+
+router.get('/viewtext', function(req, res) {
+  res.render('viewtext');
+});
+
+// [END templates]
 
 module.exports = router;
 

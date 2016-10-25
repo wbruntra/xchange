@@ -1,0 +1,22 @@
+<h1>Deck editor</h1>
+
+<form ng-submit="addDeck()">
+  <h3>Create New Deck</h3>
+  <div class="form-group">
+    <input type="text"
+    class="form-control"
+    placeholder="Deck Name"
+    ng-model="deck.title"></input>
+  </div>
+  <button type="submit" class="btn btn-primary">Create Deck</button>
+</form>
+
+<pre>
+{{ deck }}
+</pre>
+
+<%- include partials/cardform %>
+
+<pre>
+  {{ card }}
+</pre>

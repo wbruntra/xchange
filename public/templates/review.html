@@ -1,5 +1,8 @@
 <h1>Review Page</h1>
 <div class="container">
+  <ul>
+    <li ng-repeat="deck in decks"><a href="/#/study/{{deck.uniqname}}">{{deck.title}}</a></li>
+  </ul>
   <div class="col-xs-8 text-center">
     <div>
       {{ cards[index].front }}

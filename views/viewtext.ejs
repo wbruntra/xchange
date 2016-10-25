@@ -1,0 +1,10 @@
+<div annotate-text ng-mouseup="showSelectedText()">
+  <p>{{text.title}}</p>
+  <p id="chinese">{{text.content}}</p>
+<button type="button" name="button" ng-click="annotate()">Annotate</button>
+</div>
+
+<%- include partials/cardform %>
+<pre>
+  {{ card }}
+</pre>
